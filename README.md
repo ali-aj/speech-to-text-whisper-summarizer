@@ -11,7 +11,7 @@ This project is a voice-based note-taking application that allows users to captu
 ## Project Structure
 
 ```
-voice-notes-app
+speech-to-text-whisper-summarizer
 ├── app.py                # Entry point of the application
 ├── requirements.txt      # Project dependencies
 ├── src
@@ -25,8 +25,8 @@ voice-notes-app
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
-   cd voice-notes-app
+   git clone https://github.com/ali-aj/speech-to-text-whisper-summarizer.git
+   cd speech-to-text-whisper-summarizer
    ```
 
 2. Install the required dependencies:
