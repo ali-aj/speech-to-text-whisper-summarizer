@@ -187,7 +187,6 @@ python-Levenshtein==0.26.0
 pyttsx3==2.98
 pytz==2024.1
 PyWavelets==1.7.0
-PyYAML==6.0.2
 pyzmq==26.2.0
 RapidFuzz==3.10.0
 referencing==0.35.1
