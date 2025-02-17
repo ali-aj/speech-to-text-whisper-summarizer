@@ -228,7 +228,6 @@ stanza==1.9.2
 statsmodels==0.14.2
 streamlit==1.38.0
 sympy==1.13.3
-ta-lib @ file:///C:/Users/alij7/Downloads/ta_lib-0.6.0-cp312-cp312-win_amd64.whl#sha256=ba76393c412deeaead700acda6c4a4a4805195ec7715bbb88f4691599cab2752
 tenacity==8.5.0
 tensorboard==2.18.0
 tensorboard-data-server==0.7.2
