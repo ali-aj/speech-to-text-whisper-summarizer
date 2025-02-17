@@ -108,12 +108,9 @@ def transcribe_audio_manual():
                 wf.setframerate(RATE)
                 wf.writeframes(audio_data.tobytes())
 
-            # Transcribe
-            result = model.transcribe(tmp_path)
-            return {
-                'text': result['text'],
-                'language': result.get('language', 'unknown')
-            }
+            # Transcribe with English as default
+            result = model.transcribe(tmp_path, language='en')
+            return result['text']
         finally:
             if tmp_path and os.path.exists(tmp_path):
                 try:
@@ -132,11 +129,8 @@ def transcribe_file(uploaded_file):
             tmp_path = tmp_file.name
             tmp_file.write(uploaded_file.getvalue())
         
-        result = model.transcribe(tmp_path)
-        return {
-            'text': result['text'],
-            'language': result.get('language', 'unknown')
-        }
+        result = model.transcribe(tmp_path, language='en')
+        return result['text']
     except Exception as e:
         st.error(f"Error processing audio file: {str(e)}")
         return None

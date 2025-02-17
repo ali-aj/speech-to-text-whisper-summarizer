@@ -75,10 +75,9 @@ with tab1:
                     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     note_data = {
                         "title": note_title or uploaded_file.name,
-                        "content": audio_data['text'],
+                        "content": audio_data,  # audio_data is now directly the text
                         "timestamp": timestamp,
                         "folder": folder,
-                        "language": audio_data['language'],
                         "source": "upload"
                     }
                     note_manager = NoteManager()

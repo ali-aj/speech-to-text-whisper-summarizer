@@ -5,9 +5,11 @@ import requests
 
 load_dotenv()
 
-# Adjust to read from the .env file
 def generate_summary_gemini(text):
     api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        st.error("Gemini API key not found. Please check your .env file.")
+        return ""
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
@@ -15,13 +17,15 @@ def generate_summary_gemini(text):
 
     try:
         response = requests.post(url, headers=headers, json=payload)
-        print(response)
         if response.status_code == 200:
             data = response.json()
             return data.get('contents', [{}])[0].get('parts', [{}])[0].get('text', '')
         else:
             st.error(f"Gemini API error {response.status_code}: {response.text}")
             return ""
+    except requests.exceptions.RequestException as e:
+        st.error(f"Network error: {str(e)}")
+        return ""
     except Exception as e:
         st.error(f"Summarization error: {str(e)}")
         return ""
