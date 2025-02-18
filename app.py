@@ -20,7 +20,7 @@ tab1, tab2 = st.tabs(["📝 Upload Audio", "📚 View Notes"])
 with tab1:
     st.header("Upload Audio File")
     
-    uploaded_file = st.file_uploader("Choose an audio file", type=['wav', 'mp3'])
+    uploaded_file = st.file_uploader("Choose an audio file", type=['wav', 'mp3', 'm4a'])
     note_title = st.text_input("Note Title (optional)")
     
     if uploaded_file and st.button("Transcribe"):

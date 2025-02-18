@@ -39,8 +39,11 @@ def transcribe_file(uploaded_file):
 
     tmp_path = None
     try:
-        # Save uploaded file to temporary location
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
+        # Get file extension
+        file_ext = uploaded_file.name.split('.')[-1].lower()
+        
+        # Save uploaded file to temporary location with original extension
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{file_ext}') as tmp_file:
             tmp_path = tmp_file.name
             tmp_file.write(uploaded_file.getvalue())
         
