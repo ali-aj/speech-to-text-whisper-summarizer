@@ -2,64 +2,50 @@ import whisper
 import streamlit as st
 import tempfile
 import os
-import pyaudio
+import sounddevice as sd
 import wave
 import numpy as np
-from array import array
-import threading
+from scipy.io import wavfile
 import time
 
 # Constants for audio recording
-CHUNK = 1024
-FORMAT = pyaudio.paFloat32
 CHANNELS = 1
 RATE = 16000
+CHUNK = 1024
 
 @st.cache_resource
 def load_whisper_model():
-    return whisper.load_model("turbo")
+    return whisper.load_model("base")
 
 model = load_whisper_model()
 
 class AudioRecorder:
     def __init__(self):
-        self.audio = pyaudio.PyAudio()
-        self.stream = None
-        self.frames = []
-        self.is_recording = False
-
-    def callback(self, in_data, frame_count, time_info, status):
-        if self.is_recording:
-            self.frames.append(np.frombuffer(in_data, dtype=np.float32))
-        return (in_data, pyaudio.paContinue)
+        self.recording = False
+        self.audio_data = []
 
     def start_recording(self):
-        self.frames = []
-        self.is_recording = True
-        self.stream = self.audio.open(
-            format=FORMAT,
+        self.recording = True
+        self.audio_data = []
+        
+        def callback(indata, frames, time, status):
+            if self.recording:
+                self.audio_data.append(indata.copy())
+        
+        self.stream = sd.InputStream(
             channels=CHANNELS,
-            rate=RATE,
-            input=True,
-            frames_per_buffer=CHUNK,
-            stream_callback=self.callback
+            samplerate=RATE,
+            callback=callback
         )
-        self.stream.start_stream()
+        self.stream.start()
 
     def stop_recording(self):
-        if self.stream:
-            self.is_recording = False
-            time.sleep(0.5)  # Allow final chunks to be processed
-            self.stream.stop_stream()
+        if hasattr(self, 'stream'):
+            self.recording = False
+            self.stream.stop()
             self.stream.close()
-            self.stream = None
-            return np.concatenate(self.frames) if self.frames else None
+            return np.concatenate(self.audio_data, axis=0) if self.audio_data else None
         return None
-
-    def close(self):
-        if self.stream:
-            self.stream.close()
-        self.audio.terminate()
 
 recorder = None
 
@@ -100,16 +86,10 @@ def transcribe_audio_manual():
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
                 tmp_path = tmp_file.name
+                wavfile.write(tmp_path, RATE, audio_data)
 
-            # Write audio data
-            with wave.open(tmp_path, 'wb') as wf:
-                wf.setnchannels(CHANNELS)
-                wf.setsampwidth(4)
-                wf.setframerate(RATE)
-                wf.writeframes(audio_data.tobytes())
-
-            # Transcribe with English as default
-            result = model.transcribe(tmp_path, language='en')
+            # Transcribe
+            result = model.transcribe(tmp_path)
             return result['text']
         finally:
             if tmp_path and os.path.exists(tmp_path):
@@ -129,7 +109,7 @@ def transcribe_file(uploaded_file):
             tmp_path = tmp_file.name
             tmp_file.write(uploaded_file.getvalue())
         
-        result = model.transcribe(tmp_path, language='en')
+        result = model.transcribe(tmp_path)
         return result['text']
     except Exception as e:
         st.error(f"Error processing audio file: {str(e)}")

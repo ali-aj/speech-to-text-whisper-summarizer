@@ -1,4 +1,8 @@
 streamlit
 whisper
-pipwin
-pyaudio
+sounddevice
+numpy
+scipy
+wave
+python-dotenv
+requests
