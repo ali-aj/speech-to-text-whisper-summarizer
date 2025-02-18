@@ -2,22 +2,38 @@ import whisper
 import streamlit as st
 import tempfile
 import os
-import sounddevice as sd
 import wave
 import numpy as np
-from scipy.io import wavfile
-import time
 
-# Constants for audio recording
+# Constants for audio
 CHANNELS = 1
 RATE = 16000
-CHUNK = 1024
 
 @st.cache_resource
 def load_whisper_model():
     return whisper.load_model("base")
 
 model = load_whisper_model()
+
+def transcribe_file(uploaded_file):
+    """Transcribe an uploaded audio file"""
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
+            tmp_path = tmp_file.name
+            tmp_file.write(uploaded_file.getvalue())
+        
+        result = model.transcribe(tmp_path, language='en')
+        return result['text']
+    except Exception as e:
+        st.error(f"Error processing audio file: {str(e)}")
+        return None
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except:
+                pass
 
 class AudioRecorder:
     def __init__(self):
@@ -101,22 +117,3 @@ def transcribe_audio_manual():
     except Exception as e:
         st.error(f"Transcription error: {str(e)}")
         return None
-
-def transcribe_file(uploaded_file):
-    tmp_path = None
-    try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
-            tmp_path = tmp_file.name
-            tmp_file.write(uploaded_file.getvalue())
-        
-        result = model.transcribe(tmp_path)
-        return result['text']
-    except Exception as e:
-        st.error(f"Error processing audio file: {str(e)}")
-        return None
-    finally:
-        if tmp_path and os.path.exists(tmp_path):
-            try:
-                os.unlink(tmp_path)
-            except:
-                pass

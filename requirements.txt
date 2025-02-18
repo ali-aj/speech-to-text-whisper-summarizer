@@ -1,8 +1,6 @@
 streamlit
-whisper
-sounddevice
+openai-whisper
 numpy
-scipy
 wave
 python-dotenv
 requests
