@@ -4,31 +4,59 @@ import tempfile
 import os
 import wave
 import numpy as np
+import torch
 
 # Constants for audio
 CHANNELS = 1
 RATE = 16000
 
-@st.cache_resource
-def load_whisper_model():
-    return whisper.load_model("base")
+def init_model():
+    """Initialize the Whisper model with error handling"""
+    try:
+        # Check if CUDA is available and set the device accordingly
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        st.info(f"Using device: {device}")
+        
+        # Load the tiny model for better performance
+        return whisper.load_model("tiny", device=device)
+    except Exception as e:
+        st.error(f"Error initializing Whisper model: {str(e)}")
+        return None
 
-model = load_whisper_model()
+@st.cache_resource
+def get_whisper_model():
+    """Get or create the Whisper model instance"""
+    if 'whisper_model' not in st.session_state:
+        st.session_state.whisper_model = init_model()
+    return st.session_state.whisper_model
 
 def transcribe_file(uploaded_file):
     """Transcribe an uploaded audio file"""
+    model = get_whisper_model()
+    if model is None:
+        st.error("Failed to load the transcription model. Please try again.")
+        return None
+
     tmp_path = None
     try:
+        # Save uploaded file to temporary location
         with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
             tmp_path = tmp_file.name
             tmp_file.write(uploaded_file.getvalue())
         
-        result = model.transcribe(tmp_path, language='en')
+        # Transcribe with explicit language setting
+        result = model.transcribe(
+            tmp_path,
+            language='en',
+            task='transcribe',
+            fp16=False  # Disable half-precision for better compatibility
+        )
         return result['text']
     except Exception as e:
         st.error(f"Error processing audio file: {str(e)}")
         return None
     finally:
+        # Cleanup temporary file
         if tmp_path and os.path.exists(tmp_path):
             try:
                 os.unlink(tmp_path)
