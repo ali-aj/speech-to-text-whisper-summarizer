@@ -11,7 +11,7 @@ def generate_summary_gemini(text):
         st.error("Gemini API key not found. Please check your .env file.")
         return ""
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     payload = {"contents": [{"parts": [{"text": text}]}]}
 
@@ -19,7 +19,7 @@ def generate_summary_gemini(text):
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code == 200:
             data = response.json()
-            return data.get('contents', [{}])[0].get('parts', [{}])[0].get('text', '')
+            return data['candidates'][0]['content']['parts'][0]['text']
         else:
             st.error(f"Gemini API error {response.status_code}: {response.text}")
             return ""
@@ -32,5 +32,5 @@ def generate_summary_gemini(text):
 
 def generate_summary(note_data):
     text = note_data.get("text", "") if isinstance(note_data, dict) else (note_data or "")
-    text = "Summarize this text into its language: " + text
+    text = "Summarize this text: " + text
     return generate_summary_gemini(text)
