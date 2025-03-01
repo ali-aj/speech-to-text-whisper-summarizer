@@ -5,6 +5,7 @@ import os
 import wave
 import numpy as np
 import torch
+import sounddevice as sd
 
 # Constants for audio
 CHANNELS = 1
@@ -118,6 +119,7 @@ def stop_manual_recording():
     return None
 
 def transcribe_audio_manual():
+    model = get_whisper_model()  # Add this line to get the model
     try:
         if not st.session_state.get("is_recording", False):
             st.error("Recording has not been started.")
@@ -131,6 +133,7 @@ def transcribe_audio_manual():
         # Create temporary file
         tmp_path = None
         try:
+            from scipy.io import wavfile  # Import wavfile from scipy
             with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
                 tmp_path = tmp_file.name
                 wavfile.write(tmp_path, RATE, audio_data)
